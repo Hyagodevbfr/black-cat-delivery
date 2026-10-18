@@ -495,7 +495,11 @@ function App() {
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [cart, setCart] = useState<CartItem[]>([{ ...products[0], quantity: 1 }, { ...products[3], quantity: 1 }]);
   const [form, setForm] = useState<DeliveryForm>(() => ({ ...deliveryDefaults, ...(user || {}) }));
-  const addToCart = (product: Product, productExtras: string[] = [], quantity = 1, removed: string[] = []) => setCart(current => { const existing = current.find(item => item.id === product.id && JSON.stringify(item.extras || []) === JSON.stringify(productExtras) && JSON.stringify(item.removed || []) === JSON.stringify(removed)); if (existing) return current.map(item => item === existing ? { ...item, quantity: item.quantity + quantity } : item); return [...current, { ...product, quantity, extras: productExtras, removed }]; });
+  const [discount, setDiscount] = useState(0);
+  const [toast, setToast] = useState<{ id: number; name: string; image: string } | null>(null);
+  useEffect(() => { if (!toast) return; const timer = window.setTimeout(() => setToast(null), 2600); return () => window.clearTimeout(timer); }, [toast]);
+  const addToCart = (product: Product, productExtras: string[] = [], quantity = 1, removed: string[] = []) => { setToast({ id: Date.now(), name: product.name, image: product.image }); addToCartItem(product, productExtras, quantity, removed); };
+  const addToCartItem = (product: Product, productExtras: string[] = [], quantity = 1, removed: string[] = []) => setCart(current => { const existing = current.find(item => item.id === product.id && JSON.stringify(item.extras || []) === JSON.stringify(productExtras) && JSON.stringify(item.removed || []) === JSON.stringify(removed)); if (existing) return current.map(item => item === existing ? { ...item, quantity: item.quantity + quantity } : item); return [...current, { ...product, quantity, extras: productExtras, removed }]; });
   const changeCart = (id: string, amount: number) => setCart(current => current.map(item => item.id === id ? { ...item, quantity: Math.max(0, item.quantity + amount) } : item).filter(item => item.quantity > 0));
   const removeFromCart = (id: string) => setCart(current => current.filter(item => item.id !== id));
   const openProduct = (product: Product, item?: CartItem) => { setSelectedProduct(product); setEditingItem(item || null); setView('detail'); };
@@ -512,11 +516,11 @@ function App() {
   if (view === 'orders') return <OrdersPage user={user} onLogin={() => setView('account')} onReorder={reorder} onBack={backHome} />;
   if (view === 'account') return <AccountPage user={user} onLogin={loginUser} onSave={saveUser} onLogout={logoutUser} onBack={backHome} />;
   if (view === 'success') return <SuccessPage onHome={backHome} />;
-  if (view === 'cart') return <CartPage onAdd={product => addToCart(product)} cart={cart} onChange={changeCart} onRemove={removeFromCart} onClear={() => setCart([])} onContinue={continueCheckout} onEdit={item => openProduct(item, item)} onBack={backHome} />;
+  if (view === 'cart') return <CartPage onAdd={product => addToCart(product)} cart={cart} discount={discount} setDiscount={setDiscount} onChange={changeCart} onRemove={removeFromCart} onClear={() => setCart([])} onContinue={continueCheckout} onEdit={item => openProduct(item, item)} onBack={backHome} />;
   if (view === 'checkout') return checkoutStep === 'delivery' ? <DeliveryPage cart={cart} form={form} setForm={setForm} onBack={openCart} onShop={backHome} onContinue={() => openCheckout('confirmation')} /> : <ConfirmationPage cart={cart} form={form} setForm={setForm} onBack={openCart} onEdit={() => openCheckout('delivery')} onConfirm={() => setView('success')} />;
   return view === 'store' ? <Storefront cart={cart} onAdd={product => addToCart(product)} onChange={changeCart} onRemove={removeFromCart} onOpen={openProduct} onCart={openCart} /> : <ProductDetail product={selectedProduct} cart={cart} initialExtras={editingItem?.extras} initialRemoved={editingItem?.removed} onAdd={(product, extraNames, quantity, removed) => { if (editingItem) setCart(current => [...current.filter(item => item !== editingItem), { ...product, quantity, extras: extraNames, removed }]); else addToCart(product, extraNames, quantity, removed); if (editingItem) { setEditingItem(null); setView('cart'); } }} onChange={changeCart} onRemove={removeFromCart} onBack={backHome} onCart={openCart} />;
   };
-  return <SessionContext.Provider value={session}>{renderScreen()}</SessionContext.Provider>;
+  return <SessionContext.Provider value={session}>{renderScreen()}{toast && <div className="toast" key={toast.id} role="status" aria-live="polite"><img src={toast.image} alt="" /><div><strong>Adicionado ao carrinho</strong><span>{toast.name}</span></div><span className="toast-check"><Check size={16} /></span></div>}</SessionContext.Provider>;
 }
 
 export default App;
