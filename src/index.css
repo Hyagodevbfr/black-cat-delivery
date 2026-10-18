@@ -434,3 +434,5 @@ body { padding-bottom: 78px; }
   .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; overflow: visible; padding-bottom: 0; }
   .product-grid .product-card { flex: none; width: auto; }
 }
+
+.free-shipping .free-shipping-note { margin-top: 6px; font-size: 12px; color: #8290a3; }
