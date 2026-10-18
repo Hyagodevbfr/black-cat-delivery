@@ -428,3 +428,9 @@ body { padding-bottom: 78px; }
 .toast-check { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: #0f9d64; flex-shrink: 0; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
 @media (max-width: 650px) { .toast { top: auto; bottom: 80px; left: 16px; right: 16px; max-width: none; } }
+
+/* Desktop: produtos em grade, sem scroll lateral */
+@media (min-width: 1001px) {
+  .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; overflow: visible; padding-bottom: 0; }
+  .product-grid .product-card { flex: none; width: auto; }
+}
